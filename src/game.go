@@ -33,12 +33,12 @@ func (g *Game) Play(row, column int) error {
 	}
 	g.board[row][column] = g.currentPlayer
 	g.rolls++
-	g.evaluateGame()
-	g.alternatePlayes()
+	g.evaluate()
+	g.alternatePlayers()
 	return nil
 }
 
-func (g *Game) alternatePlayes() {
+func (g *Game) alternatePlayers() {
 	if g.currentPlayer == g.players[0] {
 		g.currentPlayer = g.players[1]
 	} else {
@@ -64,31 +64,40 @@ func (g *Game) Status() string {
 	return fmt.Sprintf("%s turn", g.currentPlayer)
 }
 
-func (g *Game) evaluateGame() {
-	var row string
-	var col string
-	diagonalA := fmt.Sprintf("%s%s%s", g.board[0][0], g.board[1][1], g.board[2][2])
-	diagonalB := fmt.Sprintf("%s%s%s", g.board[2][0], g.board[1][1], g.board[0][2])
+func (g *Game) evaluate() {
+	if isDiagonal1Equal(&g.board) {
+		g.winner = g.board[0][0]
+	}
 
-	for _, player := range g.players {
-		if diagonalA == fmt.Sprintf("%s%s%s", player, player, player) {
-			g.winner = player
+	if isDiagonal2Equal(&g.board) {
+		g.winner = g.board[2][0]
+	}
+
+	for i := 0; i < 3; i++ {
+		if isRowEqual(&g.board[i]) {
+			g.winner = g.board[i][0]
+			break
 		}
 
-		if diagonalB == fmt.Sprintf("%s%s%s", player, player, player) {
-			g.winner = player
-		}
-
-		for i := 0; i < 3; i++ {
-			row = fmt.Sprintf("%s%s%s", g.board[i][0], g.board[i][1], g.board[i][2])
-			col = fmt.Sprintf("%s%s%s", g.board[0][i], g.board[1][i], g.board[2][i])
-			if row == fmt.Sprintf("%s%s%s", player, player, player) {
-				g.winner = player
-			}
-
-			if col == fmt.Sprintf("%s%s%s", player, player, player) {
-				g.winner = player
-			}
+		if isColEqual(&g.board, i) {
+			g.winner = g.board[0][i]
+			break
 		}
 	}
+}
+
+func isDiagonal1Equal(board *[3][3]string) bool {
+	return board[0][0] == board[1][1] && (board[0][0] == board[2][2])
+}
+
+func isDiagonal2Equal(board *[3][3]string) bool {
+	return board[2][0] == board[1][1] && (board[2][0] == board[0][2])
+}
+
+func isRowEqual(row *[3]string) bool {
+	return row[0] != "" && row[0] == row[1] && (row[0] == row[2])
+}
+
+func isColEqual(board *[3][3]string, i int) bool {
+	return board[0][i] != "" && board[0][i] == board[1][i] && (board[0][i] == board[2][i])
 }
